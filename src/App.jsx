@@ -10,7 +10,7 @@ import Admin from './pages/Admin';
 function App() {
   return (
     <Router basename="/urbani">
-      <div className="font-sans antialiased max-w-md mx-auto relative min-h-[100dvh] bg-background shadow-2xl flex flex-col">
+      <div className="font-sans antialiased relative min-h-[100dvh] bg-background flex flex-col md:pt-16">
         {/* Main Content Area */}
         <main className="w-full flex-1 overflow-x-hidden">
           <Routes>

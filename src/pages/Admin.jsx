@@ -57,32 +57,32 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-12 pt-8 px-4 w-full">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-serif text-textPrimary">Prenotazioni</h1>
-        <button onClick={fetchBookings} className="text-sm bg-white border border-gray-200 px-3 py-1 rounded-lg">Aggiorna</button>
+    <div className="min-h-[100dvh] bg-background pb-12 pt-8 px-4 md:px-8 max-w-6xl mx-auto w-full">
+      <div className="flex justify-between items-center mb-8 md:mb-10 md:mt-4">
+        <h1 className="text-2xl md:text-4xl font-serif text-textPrimary">Prenotazioni</h1>
+        <button onClick={fetchBookings} className="text-sm md:text-base bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm font-medium">Aggiorna Dati</button>
       </div>
 
       {loading ? (
-        <p className="text-center text-gray-500 mt-10">Caricamento in corso...</p>
+        <p className="text-center text-gray-500 mt-10 md:text-lg">Caricamento in corso...</p>
       ) : bookings.length === 0 ? (
-        <p className="text-center text-gray-500 mt-10">Nessuna prenotazione trovata.</p>
+        <p className="text-center text-gray-500 mt-10 md:text-lg">Nessuna prenotazione trovata.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {bookings.map((booking) => (
-            <div key={booking.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg">{booking.name}</h3>
-                <span className="bg-gray-100 text-xs px-2 py-1 rounded-full font-medium">
+            <div key={booking.id} className="bg-white p-5 md:p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex flex-col h-full">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="font-bold text-lg md:text-xl text-textPrimary">{booking.name}</h3>
+                <span className="bg-gray-100 text-xs md:text-sm px-3 py-1 rounded-full font-semibold text-gray-700">
                   {new Date(booking.date).toLocaleDateString('it-IT')}
                 </span>
               </div>
-              <p className="text-gray-600 text-sm mb-1">📞 {booking.phone}</p>
-              <p className="text-gray-600 text-sm mb-3">👥 {booking.adults} Adulti, {booking.children} Bambini</p>
+              <p className="text-gray-600 text-sm md:text-base mb-2 flex items-center">📞 <span className="ml-2 font-medium">{booking.phone}</span></p>
+              <p className="text-gray-600 text-sm md:text-base mb-4 flex-1 flex items-center">👥 <span className="ml-2 font-medium">{booking.adults} Adulti, {booking.children} Bambini</span></p>
               
-              <div className="flex justify-between items-center border-t border-gray-100 pt-3 mt-2">
-                <span className="text-xs font-medium text-accent uppercase">{booking.packageId}</span>
-                <span className="font-bold text-textPrimary">€ {booking.total}</span>
+              <div className="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
+                <span className="text-xs md:text-sm font-bold text-accent uppercase tracking-wider">{booking.packageId}</span>
+                <span className="font-bold text-xl text-textPrimary">€ {booking.total}</span>
               </div>
             </div>
           ))}
