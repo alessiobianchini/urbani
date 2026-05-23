@@ -9,7 +9,7 @@ import Admin from './pages/Admin';
 
 function App() {
   return (
-    <Router basename="/faro-rosso-pwa">
+    <Router basename="/urbani">
       <div className="font-sans antialiased max-w-md mx-auto relative min-h-[100dvh] bg-background shadow-2xl flex flex-col">
         {/* Main Content Area */}
         <main className="w-full flex-1 overflow-x-hidden">
