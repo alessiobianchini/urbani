@@ -3,7 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-apiKey: "AIzaSyBxxcQCHpgg2zg2Ha5aC-PAmqmZ7oMB9BQ",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "urbani-d5b54.firebaseapp.com",
   projectId: "urbani-d5b54",
   storageBucket: "urbani-d5b54.firebasestorage.app",
