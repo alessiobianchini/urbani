@@ -8,7 +8,8 @@ const Admin = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState('');
+  // Inizializza con la data di oggi nel formato YYYY-MM-DD
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleLogin = (e) => {
     e.preventDefault();
