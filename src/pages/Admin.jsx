@@ -8,6 +8,8 @@ const Admin = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [selectedDate, setSelectedDate] = useState('');
+
   const handleLogin = (e) => {
     e.preventDefault();
     // Password fissa per semplicità (cambiala se vuoi!)
@@ -36,6 +38,10 @@ const Admin = () => {
     setLoading(false);
   };
 
+  const filteredBookings = selectedDate 
+    ? bookings.filter(b => b.date === selectedDate)
+    : bookings;
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
@@ -58,18 +64,28 @@ const Admin = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-12 pt-8 px-4 md:px-8 max-w-6xl mx-auto w-full">
-      <div className="flex justify-between items-center mb-8 md:mb-10 md:mt-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-10 md:mt-4 gap-4">
         <h1 className="text-2xl md:text-4xl font-serif text-textPrimary">Prenotazioni</h1>
-        <button onClick={fetchBookings} className="text-sm md:text-base bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm font-medium">Aggiorna Dati</button>
+        <div className="flex gap-2 w-full md:w-auto">
+          <input 
+            type="date" 
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="flex-1 md:flex-none border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+          />
+          <button onClick={fetchBookings} className="text-sm md:text-base bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm font-medium">Aggiorna Dati</button>
+        </div>
       </div>
 
       {loading ? (
         <p className="text-center text-gray-500 mt-10 md:text-lg">Caricamento in corso...</p>
-      ) : bookings.length === 0 ? (
-        <p className="text-center text-gray-500 mt-10 md:text-lg">Nessuna prenotazione trovata.</p>
+      ) : filteredBookings.length === 0 ? (
+        <p className="text-center text-gray-500 mt-10 md:text-lg">
+          {selectedDate ? `Nessuna prenotazione trovata per la data selezionata.` : `Nessuna prenotazione trovata.`}
+        </p>
       ) : (
         <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-          {bookings.map((booking) => (
+          {filteredBookings.map((booking) => (
             <div key={booking.id} className="bg-white p-5 md:p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-lg md:text-xl text-textPrimary">{booking.name}</h3>
