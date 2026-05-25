@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const PACKAGES = [
@@ -35,6 +35,12 @@ const BookingWizard = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [soldOutMessage, setSoldOutMessage] = useState('');
+
+  const WHATSAPP_NUMBER = "393331234567"; // Sostituisci in futuro
+  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Ciao, vorrei avere informazioni sulla disponibilità per la data del ")}`;
 
   const calculateTotal = () => {
     const pkg = PACKAGES.find(p => p.id === selectedPackage);
@@ -42,9 +48,58 @@ const BookingWizard = () => {
     return pkg.price * adults + (pkg.price * 0.5) * children;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 1 && date && adults > 0 && name && phone) {
-      setStep(2);
+      setCheckingAvailability(true);
+      setSoldOutMessage('');
+      
+      try {
+        // 1. Fetch daily limit
+        const limitRef = doc(db, 'limiti_giornalieri', date);
+        const limitSnap = await getDoc(limitRef);
+        let maxGuests = -1; // -1 means infinite
+        
+        if (limitSnap.exists() && limitSnap.data().maxGuests !== undefined) {
+          maxGuests = limitSnap.data().maxGuests;
+        }
+
+        if (maxGuests === 0) {
+          setSoldOutMessage(`Per la data selezionata siamo al completo. Non è possibile effettuare prenotazioni online.`);
+          setCheckingAvailability(false);
+          return;
+        }
+
+        // 2. Count current guests if there is a limit
+        if (maxGuests > 0) {
+          const q = query(collection(db, 'prenotazioni'), where('date', '==', date));
+          const querySnapshot = await getDocs(q);
+          
+          let currentGuests = 0;
+          querySnapshot.forEach((doc) => {
+            const b = doc.data();
+            currentGuests += (b.adults || 0) + (b.children || 0);
+          });
+
+          const requestedGuests = adults + children;
+
+          if (currentGuests + requestedGuests > maxGuests) {
+            const remaining = Math.max(0, maxGuests - currentGuests);
+            if (remaining === 0) {
+              setSoldOutMessage(`Per la data selezionata non ci sono più posti disponibili online.`);
+            } else {
+              setSoldOutMessage(`Per la data selezionata rimangono solo ${remaining} posti online, ma tu ne hai richiesti ${requestedGuests}.`);
+            }
+            setCheckingAvailability(false);
+            return;
+          }
+        }
+
+        setStep(2);
+      } catch (e) {
+        console.error("Errore disponibilità:", e);
+        alert("Errore durante la verifica della disponibilità. Riprova.");
+      }
+      setCheckingAvailability(false);
     }
   };
 
@@ -177,12 +232,25 @@ const BookingWizard = () => {
             </div>
           </div>
 
+          {soldOutMessage && (
+            <div className="mb-6 p-5 bg-red-50 border border-red-200 rounded-xl animate-in fade-in slide-in-from-bottom-2 shadow-sm">
+              <p className="text-red-800 font-medium text-center mb-4">{soldOutMessage}</p>
+              <a 
+                href={WHATSAPP_LINK + new Date(date).toLocaleDateString('it-IT')}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-xl font-semibold shadow-md hover:bg-[#20bd5a] transition-colors"
+              >
+                Contattaci su WhatsApp
+              </a>
+            </div>
+          )}
+
           <button 
             onClick={handleNext}
-            disabled={!date || !name || !phone}
+            disabled={!date || !name || !phone || checkingAvailability}
             className="w-full bg-cta text-white py-4 rounded-xl font-semibold text-lg disabled:opacity-50 transition-all hover:bg-red-800 shadow-md"
           >
-            Avanti
+            {checkingAvailability ? 'Verifica disponibilità...' : 'Avanti'}
           </button>
         </div>
       )}

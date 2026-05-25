@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const Admin = () => {
@@ -10,6 +10,44 @@ const Admin = () => {
 
   // Inizializza con la data di oggi nel formato YYYY-MM-DD
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  const [dailyLimit, setDailyLimit] = useState('');
+  const [savingLimit, setSavingLimit] = useState(false);
+
+  // Fetch limit when date changes
+  useEffect(() => {
+    if (selectedDate && isAuthenticated) {
+      const fetchLimit = async () => {
+        try {
+          const docRef = doc(db, 'limiti_giornalieri', selectedDate);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().maxGuests !== -1) {
+            setDailyLimit(docSnap.data().maxGuests.toString());
+          } else {
+            setDailyLimit('');
+          }
+        } catch (e) {
+          console.error("Errore recupero limite:", e);
+        }
+      };
+      fetchLimit();
+    }
+  }, [selectedDate, isAuthenticated]);
+
+  const handleSaveLimit = async () => {
+    if (!selectedDate) return;
+    setSavingLimit(true);
+    try {
+      const docRef = doc(db, 'limiti_giornalieri', selectedDate);
+      const limitToSave = dailyLimit === '' ? -1 : parseInt(dailyLimit, 10);
+      await setDoc(docRef, { maxGuests: limitToSave });
+      alert('Limite aggiornato con successo per il ' + new Date(selectedDate).toLocaleDateString('it-IT'));
+    } catch (e) {
+      console.error(e);
+      alert('Errore nel salvataggio del limite');
+    }
+    setSavingLimit(false);
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -65,7 +103,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-12 pt-8 px-4 md:px-8 max-w-6xl mx-auto w-full">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-10 md:mt-4 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mt-4 gap-4">
         <h1 className="text-2xl md:text-4xl font-serif text-textPrimary">Prenotazioni</h1>
         <div className="flex gap-2 w-full md:w-auto">
           <input 
@@ -77,6 +115,32 @@ const Admin = () => {
           <button onClick={fetchBookings} className="text-sm md:text-base bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm font-medium">Aggiorna Dati</button>
         </div>
       </div>
+
+      {selectedDate && (
+        <div className="bg-white p-4 rounded-xl border border-gray-200 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+          <div>
+            <h2 className="font-semibold text-textPrimary text-lg">Limite Ospiti: {new Date(selectedDate).toLocaleDateString('it-IT')}</h2>
+            <p className="text-sm text-gray-500">Imposta a 0 per bloccare le prenotazioni. Lascia vuoto per nessun limite.</p>
+          </div>
+          <div className="flex gap-2 w-full md:w-auto">
+            <input 
+              type="number" 
+              value={dailyLimit}
+              onChange={(e) => setDailyLimit(e.target.value)}
+              placeholder="Nessun limite"
+              className="w-full md:w-32 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-accent"
+              min="0"
+            />
+            <button 
+              onClick={handleSaveLimit} 
+              disabled={savingLimit}
+              className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 min-w-max hover:bg-red-800 transition-colors"
+            >
+              {savingLimit ? 'Salvataggio...' : 'Salva Limite'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-center text-gray-500 mt-10 md:text-lg">Caricamento in corso...</p>
