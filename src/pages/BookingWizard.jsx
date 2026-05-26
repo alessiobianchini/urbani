@@ -44,6 +44,24 @@ const BookingWizard = () => {
   
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [soldOutMessage, setSoldOutMessage] = useState('');
+  const [lettiniLimitReached, setLettiniLimitReached] = useState(false);
+
+  const handleAddLettino = (e) => {
+    e.stopPropagation();
+    if (lettiniCount >= availableLettini) {
+      setLettiniLimitReached(true);
+    } else {
+      setLettiniCount(lettiniCount + 1);
+      setLettiniLimitReached(false);
+    }
+  };
+
+  const handleRemoveLettino = (e) => {
+    e.stopPropagation();
+    setLettiniCount(Math.max(1, lettiniCount - 1));
+    setLettiniLimitReached(false);
+  };
+
 
   const WHATSAPP_NUMBER = "393317329106";
 
@@ -340,10 +358,30 @@ const BookingWizard = () => {
               {area === 'lettini' && (
                 <div className="pt-4 border-t border-gray-200 space-y-4 animate-in fade-in">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-700">Lettino (Max 1)</span>
-                    <span className="font-bold text-accent">Incluso</span>
+                    <span className="font-medium text-gray-700">Numero Lettini</span>
+                    <div className="flex items-center gap-3">
+                      <button onClick={handleRemoveLettino} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">-</button>
+                      <span className="w-4 text-center font-bold">{lettiniCount}</span>
+                      <button onClick={handleAddLettino} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">+</button>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
+                  
+                  {lettiniLimitReached && (
+                    <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-xl animate-in fade-in slide-in-from-top-2">
+                      <p className="text-orange-800 font-medium text-xs text-center mb-2">
+                        Il limite massimo di lettini disponibili online per questa data è stato raggiunto.
+                      </p>
+                      <a 
+                        href={WHATSAPP_LINK + new Date(date).toLocaleDateString('it-IT')}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-2 rounded-xl font-semibold shadow-sm hover:bg-[#20bd5a] transition-colors text-xs"
+                      >
+                        Contattaci su WhatsApp
+                      </a>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center pt-2">
                     <span className="font-medium text-gray-700">Aggiungi Ombrellone</span>
                     <div className="flex items-center gap-2">
                       <button 
