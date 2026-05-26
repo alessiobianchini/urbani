@@ -109,9 +109,9 @@ const BookingWizard = () => {
 
   const sendEmailConfirmation = async (bookingData) => {
     try {
-      const SERVICE_ID = "YOUR_SERVICE_ID";
-      const TEMPLATE_ID = "YOUR_TEMPLATE_ID";
-      const PUBLIC_KEY = "YOUR_PUBLIC_KEY";
+      const SERVICE_ID = "service_lkobs94";
+      const TEMPLATE_ID = "template_rfruwzw";
+      const PUBLIC_KEY = "q8QdVlQS0IRgQGa65";
 
       if (SERVICE_ID === "YOUR_SERVICE_ID") {
         console.log("EmailJS non configurato. Salto invio email.");
@@ -167,6 +167,8 @@ const BookingWizard = () => {
         <h1 className="text-3xl font-serif text-textPrimary mb-2">Prenotazione Inviata!</h1>
         <p className="text-gray-600 mb-8 max-w-sm">
           Grazie {name.split(' ')[0]}, la tua richiesta per il {new Date(date).toLocaleDateString('it-IT')} è stata registrata. Riceverai a breve un'email di conferma.
+          <br /><br />
+          <span className="text-sm font-medium text-gray-500">Se non la vedi entro pochi minuti, controlla la cartella Spam o Posta Indesiderata.</span>
         </p>
         <button 
           onClick={() => window.location.href = '/faro-rosso-pwa/'}
