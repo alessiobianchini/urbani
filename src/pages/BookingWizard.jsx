@@ -87,7 +87,7 @@ const BookingWizard = () => {
           setSoldOutMessage(`Per la data selezionata i lettini sono esauriti. È possibile prenotare solo l'ingresso sul Prato.`);
           setArea('prato');
         } else {
-          setLettiniCount(Math.min(adults, remL));
+          setLettiniCount(1);
           setOmbrelloniCount(Math.min(1, remO));
           setArea(''); 
         }
@@ -340,19 +340,24 @@ const BookingWizard = () => {
               {area === 'lettini' && (
                 <div className="pt-4 border-t border-gray-200 space-y-4 animate-in fade-in">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-700">Numero Lettini</span>
-                    <div className="flex items-center gap-3">
-                      <button onClick={(e) => { e.stopPropagation(); setLettiniCount(Math.max(1, lettiniCount - 1)); }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">-</button>
-                      <span className="w-4 text-center font-bold">{lettiniCount}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setLettiniCount(Math.min(availableLettini, lettiniCount + 1)); }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">+</button>
-                    </div>
+                    <span className="font-medium text-gray-700">Lettino (Max 1)</span>
+                    <span className="font-bold text-accent">Incluso</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-700">Numero Ombrelloni</span>
-                    <div className="flex items-center gap-3">
-                      <button onClick={(e) => { e.stopPropagation(); setOmbrelloniCount(Math.max(0, ombrelloniCount - 1)); }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">-</button>
-                      <span className="w-4 text-center font-bold">{ombrelloniCount}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setOmbrelloniCount(Math.min(availableOmbrelloni, lettiniCount, ombrelloniCount + 1)); }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">+</button>
+                    <span className="font-medium text-gray-700">Aggiungi Ombrellone</span>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setOmbrelloniCount(1); }} 
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${ombrelloniCount === 1 ? 'bg-accent text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                      >
+                        Sì
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setOmbrelloniCount(0); }} 
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${ombrelloniCount === 0 ? 'bg-accent text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                      >
+                        No
+                      </button>
                     </div>
                   </div>
                 </div>
