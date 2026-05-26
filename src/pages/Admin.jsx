@@ -11,7 +11,8 @@ const Admin = () => {
   // Inizializza con la data di oggi nel formato YYYY-MM-DD
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   
-  const [dailyLimit, setDailyLimit] = useState('');
+  const [dailyLimitLettini, setDailyLimitLettini] = useState('');
+  const [dailyLimitOmbrelloni, setDailyLimitOmbrelloni] = useState('');
   const [savingLimit, setSavingLimit] = useState(false);
 
   // Fetch limit when date changes
@@ -21,10 +22,13 @@ const Admin = () => {
         try {
           const docRef = doc(db, 'limiti_giornalieri', selectedDate);
           const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().maxGuests !== -1) {
-            setDailyLimit(docSnap.data().maxGuests.toString());
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setDailyLimitLettini(data.maxLettini !== undefined ? data.maxLettini.toString() : '30');
+            setDailyLimitOmbrelloni(data.maxOmbrelloni !== undefined ? data.maxOmbrelloni.toString() : '10');
           } else {
-            setDailyLimit('');
+            setDailyLimitLettini('30');
+            setDailyLimitOmbrelloni('10');
           }
         } catch (e) {
           console.error("Errore recupero limite:", e);
@@ -39,12 +43,13 @@ const Admin = () => {
     setSavingLimit(true);
     try {
       const docRef = doc(db, 'limiti_giornalieri', selectedDate);
-      const limitToSave = dailyLimit === '' ? -1 : parseInt(dailyLimit, 10);
-      await setDoc(docRef, { maxGuests: limitToSave });
-      alert('Limite aggiornato con successo per il ' + new Date(selectedDate).toLocaleDateString('it-IT'));
+      const limitL = dailyLimitLettini === '' ? 30 : parseInt(dailyLimitLettini, 10);
+      const limitO = dailyLimitOmbrelloni === '' ? 10 : parseInt(dailyLimitOmbrelloni, 10);
+      await setDoc(docRef, { maxLettini: limitL, maxOmbrelloni: limitO });
+      alert('Limiti aggiornati con successo per il ' + new Date(selectedDate).toLocaleDateString('it-IT'));
     } catch (e) {
       console.error(e);
-      alert('Errore nel salvataggio del limite');
+      alert('Errore nel salvataggio dei limiti');
     }
     setSavingLimit(false);
   };
@@ -119,25 +124,39 @@ const Admin = () => {
       {selectedDate && (
         <div className="bg-white p-4 rounded-xl border border-gray-200 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
           <div>
-            <h2 className="font-semibold text-textPrimary text-lg">Limite Ospiti: {new Date(selectedDate).toLocaleDateString('it-IT')}</h2>
-            <p className="text-sm text-gray-500">Imposta a 0 per bloccare le prenotazioni. Lascia vuoto per nessun limite.</p>
+            <h2 className="font-semibold text-textPrimary text-lg">Limiti del {new Date(selectedDate).toLocaleDateString('it-IT')}</h2>
+            <p className="text-sm text-gray-500">Default: 30 lettini, 10 ombrelloni. Imposta a 0 per esaurire.</p>
           </div>
-          <div className="flex gap-2 w-full md:w-auto">
-            <input 
-              type="number" 
-              value={dailyLimit}
-              onChange={(e) => setDailyLimit(e.target.value)}
-              placeholder="Nessun limite"
-              className="w-full md:w-32 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-accent"
-              min="0"
-            />
-            <button 
-              onClick={handleSaveLimit} 
-              disabled={savingLimit}
-              className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 min-w-max hover:bg-red-800 transition-colors"
-            >
-              {savingLimit ? 'Salvataggio...' : 'Salva Limite'}
-            </button>
+          <div className="flex gap-2 w-full md:w-auto flex-wrap md:flex-nowrap">
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 mb-1">Max Lettini</label>
+              <input 
+                type="number" 
+                value={dailyLimitLettini}
+                onChange={(e) => setDailyLimitLettini(e.target.value)}
+                className="w-full md:w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-accent"
+                min="0"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 mb-1">Max Ombrelloni</label>
+              <input 
+                type="number" 
+                value={dailyLimitOmbrelloni}
+                onChange={(e) => setDailyLimitOmbrelloni(e.target.value)}
+                className="w-full md:w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-accent"
+                min="0"
+              />
+            </div>
+            <div className="flex flex-col justify-end">
+              <button 
+                onClick={handleSaveLimit} 
+                disabled={savingLimit}
+                className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 min-w-max hover:bg-red-800 transition-colors h-[38px]"
+              >
+                {savingLimit ? '...' : 'Salva'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -158,12 +177,15 @@ const Admin = () => {
                   {new Date(booking.date).toLocaleDateString('it-IT')}
                 </span>
               </div>
-              <p className="text-gray-600 text-sm md:text-base mb-2 flex items-center">📞 <span className="ml-2 font-medium">{booking.phone}</span></p>
+              <p className="text-gray-600 text-sm md:text-base mb-1 flex items-center">✉️ <span className="ml-2 text-xs md:text-sm">{booking.email || 'N/A'}</span></p>
+              <p className="text-gray-600 text-sm md:text-base mb-1 flex items-center">📞 <span className="ml-2 font-medium">{booking.phone}</span></p>
               <p className="text-gray-600 text-sm md:text-base mb-4 flex-1 flex items-center">👥 <span className="ml-2 font-medium">{booking.adults} Adulti, {booking.children} Bambini</span></p>
               
               <div className="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
                 <span className="text-xs md:text-sm font-bold text-accent uppercase tracking-wider">{booking.packageId}</span>
-                <span className="font-bold text-xl text-textPrimary">€ {booking.total}</span>
+                <span className="font-bold text-md text-textPrimary">
+                  {booking.area === 'lettini' ? `Lettini: ${booking.lettiniCount || 0} | Ombr: ${booking.ombrelloniCount || 0}` : 'Prato'}
+                </span>
               </div>
             </div>
           ))}
